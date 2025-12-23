@@ -7,6 +7,7 @@ public record AccountSummary(
         String accountNumber,
         String issuer,
         String color,
-        double amount
+        double amount,
+        String status
 ) {
 }

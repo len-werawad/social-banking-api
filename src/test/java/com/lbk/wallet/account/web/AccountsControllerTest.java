@@ -49,8 +49,8 @@ class AccountsControllerTest {
         void list_shouldReturnPaginatedAccounts() throws Exception {
             var paginatedResponse = PaginatedResponse.of(
                     List.of(
-                            new AccountSummary("acc-1", "SAVING", "THB", "123-456", "KBank", "#FF5733", 1000.00),
-                            new AccountSummary("acc-2", "GOAL", "THB", "222-333", "SCB", "#3357FF", 500.00)
+                            new AccountSummary("acc-1", "SAVING", "THB", "123-456", "KBank", "#FF5733", 1000.00, "IN_PROGRESS"),
+                            new AccountSummary("acc-2", "GOAL", "THB", "222-333", "SCB", "#3357FF", 500.00, "IN_PROGRESS")
                     ),
                     PageInfo.of(1, 20, 2)
             );
@@ -100,7 +100,7 @@ class AccountsControllerTest {
         @WithMockUser(username = "u1")
         void list_shouldReturnPaginatedAccountsWithParams() throws Exception {
             var paginatedResponse = PaginatedResponse.of(
-                    List.of(new AccountSummary("acc-1", "SAVING", "THB", "123-456", "KBank", "#FF5733", 1000.00)),
+                    List.of(new AccountSummary("acc-1", "SAVING", "THB", "123-456", "KBank", "#FF5733", 1000.00, "IN_PROGRESS")),
                     PageInfo.of(2, 10, 25)
             );
             when(accountService.listAccounts("u1", new PageRequest(2, 10))).thenReturn(paginatedResponse);
@@ -198,8 +198,8 @@ class AccountsControllerTest {
         void goals_shouldReturnPaginatedGoalAccounts() throws Exception {
             var paginatedResponse = PaginatedResponse.of(
                     List.of(
-                            new AccountSummary("acc-goal", "GOAL", "THB", "999-111", "KBank", "#FF5733", 150.00),
-                            new AccountSummary("acc-save", "SAVING", "THB", "123-456", "SCB", "#3357FF", 999.00)
+                            new AccountSummary("acc-goal", "GOAL", "THB", "999-111", "KBank", "#FF5733", 150.00, "IN_PROGRESS"),
+                            new AccountSummary("acc-save", "SAVING", "THB", "123-456", "SCB", "#3357FF", 999.00, "IN_PROGRESS")
                     ),
                     PageInfo.of(1, 20, 2)
             );
@@ -225,7 +225,7 @@ class AccountsControllerTest {
         @WithMockUser(username = "u1")
         void goals_shouldReturnEmptyPaginatedListWhenNoGoals() throws Exception {
             var paginatedResponse = PaginatedResponse.of(
-                    List.of(new AccountSummary("acc-save", "SAVING", "THB", "123-456", "SCB", "#3357FF", 999.00)),
+                    List.of(new AccountSummary("acc-save", "SAVING", "THB", "123-456", "SCB", "#3357FF", 999.00, "IN_PROGRESS")),
                     PageInfo.of(1, 20, 1)
             );
             when(accountService.listAccounts("u1", new PageRequest(1, 20))).thenReturn(paginatedResponse);
@@ -244,8 +244,8 @@ class AccountsControllerTest {
         void goals_shouldHandleMixedCaseType() throws Exception {
             var paginatedResponse = PaginatedResponse.of(
                     List.of(
-                            new AccountSummary("acc-goal1", "goal", "THB", "111-222", "KBank", "#FF5733", 100.00),
-                            new AccountSummary("acc-goal2", "Goal", "THB", "333-444", "SCB", "#3357FF", 200.00)
+                            new AccountSummary("acc-goal1", "goal", "THB", "111-222", "KBank", "#FF5733", 100.00, "IN_PROGRESS"),
+                            new AccountSummary("acc-goal2", "Goal", "THB", "333-444", "SCB", "#3357FF", 200.00, "IN_PROGRESS")
                     ),
                     PageInfo.of(1, 20, 2)
             );
@@ -269,8 +269,8 @@ class AccountsControllerTest {
         void loans_shouldReturnOnlyLoanAccounts() throws Exception {
             var paginatedResponse = PaginatedResponse.of(
                     List.of(
-                            new AccountSummary("acc-loan", "LOAN", "THB", "111-222", "KBank", "#FF5733", 2500.00),
-                            new AccountSummary("acc-goal", "GOAL", "THB", "999-111", "SCB", "#3357FF", 150.00)
+                            new AccountSummary("acc-loan", "LOAN", "THB", "111-222", "KBank", "#FF5733", 2500.00, "ACTIVE"),
+                            new AccountSummary("acc-goal", "GOAL", "THB", "999-111", "SCB", "#3357FF", 150.00, "ACTIVE")
                     ),
                     PageInfo.of(1, 20, 2)
             );
@@ -282,7 +282,7 @@ class AccountsControllerTest {
                     .andExpect(jsonPath("$.data").isArray())
                     .andExpect(jsonPath("$.data.length()").value(1))
                     .andExpect(jsonPath("$.data[0].loanId").value("acc-loan"))
-                    .andExpect(jsonPath("$.data[0].name").value("Credit Loan"))
+                    .andExpect(jsonPath("$.data[0].name").value("111-222"))
                     .andExpect(jsonPath("$.data[0].status").value("ACTIVE"))
                     .andExpect(jsonPath("$.data[0].outstandingAmount").value(2500.00))
                     .andExpect(jsonPath("$.pagination").exists())
@@ -295,7 +295,7 @@ class AccountsControllerTest {
         @WithMockUser(username = "u1")
         void loans_shouldReturnEmptyListWhenNoLoans() throws Exception {
             var paginatedResponse = PaginatedResponse.of(
-                    List.of(new AccountSummary("acc-save", "SAVING", "THB", "123-456", "SCB", "#3357FF", 999.00)),
+                    List.of(new AccountSummary("acc-save", "SAVING", "THB", "123-456", "SCB", "#3357FF", 999.00, "IN_PROGRESS")),
                     PageInfo.of(1, 20, 1)
             );
             when(accountService.listAccounts("u1", new PageRequest(1, 20))).thenReturn(paginatedResponse);
@@ -313,8 +313,8 @@ class AccountsControllerTest {
         void loans_shouldReturnMultipleLoans() throws Exception {
             var paginatedResponse = PaginatedResponse.of(
                     List.of(
-                            new AccountSummary("acc-loan1", "LOAN", "THB", "111-222", "KBank", "#FF5733", 2500.00),
-                            new AccountSummary("acc-loan2", "LOAN", "THB", "333-444", "SCB", "#3357FF", 5000.00)
+                            new AccountSummary("acc-loan1", "LOAN", "THB", "111-222", "KBank", "#FF5733", 2500.00, "IN_PROGRESS"),
+                            new AccountSummary("acc-loan2", "LOAN", "THB", "333-444", "SCB", "#3357FF", 5000.00, "IN_PROGRESS")
                     ),
                     PageInfo.of(1, 20, 2)
             );

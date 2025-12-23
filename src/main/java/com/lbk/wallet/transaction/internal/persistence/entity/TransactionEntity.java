@@ -27,4 +27,7 @@ public class TransactionEntity {
 
     @Column(name = "is_bank")
     private Boolean isBank;
+
+    @Column(name = "dummy_col_6")
+    private String dummyCol6;
 }

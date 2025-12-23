@@ -31,4 +31,7 @@ public class AccountEntity {
     private String accountNumber;
 
     private String issuer;
+
+    @Column(name = "dummy_col_3")
+    private String dummyCol3;
 }

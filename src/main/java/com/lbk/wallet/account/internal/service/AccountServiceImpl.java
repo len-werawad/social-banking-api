@@ -58,7 +58,8 @@ class AccountServiceImpl implements AccountService {
                     var det = detByAcc.get(a.getAccountId());
                     double amount = bal == null ? 0.0 : bal.doubleValue();
                     String color = det == null ? null : det.getColor();
-                    return new AccountSummary(a.getAccountId(), a.getType(), a.getCurrency(), a.getAccountNumber(), a.getIssuer(), color, amount);
+                    String status = det == null ? null : getStatus(det.getProgress());
+                    return new AccountSummary(a.getAccountId(), a.getType(), a.getCurrency(), a.getAccountNumber(), a.getIssuer(), color, amount, status);
                 })
                 .toList();
 
@@ -71,7 +72,7 @@ class AccountServiceImpl implements AccountService {
         log.debug("Fetching paginated accounts for user: {}, page: {}, limit: {}", userId, pageRequest.page(), pageRequest.limit());
 
         Page<AccountEntity> accountPage =
-            accounts.findByUserId(userId, pageRequest.toPageable());
+                accounts.findByUserId(userId, pageRequest.toPageable());
 
         Map<String, BigDecimal> accBalance = getBalancesByUserId(userId);
 
@@ -86,7 +87,7 @@ class AccountServiceImpl implements AccountService {
                     var det = accDetail.get(a.getAccountId());
                     double amount = bal == null ? 0.0 : bal.doubleValue();
                     String color = det == null ? null : det.getColor();
-                    return new AccountSummary(a.getAccountId(), a.getType(), a.getCurrency(), a.getAccountNumber(), a.getIssuer(), color, amount);
+                    return new AccountSummary(a.getAccountId(), a.getType(), a.getCurrency(), a.getAccountNumber(), a.getIssuer(), color, amount, getStatus(det.getProgress()));
                 })
                 .toList();
 
@@ -96,8 +97,22 @@ class AccountServiceImpl implements AccountService {
             var det = accDetail.get(a.getAccountId());
             double amount = bal == null ? 0.0 : bal.doubleValue();
             String color = det == null ? null : det.getColor();
-            return new AccountSummary(a.getAccountId(), a.getType(), a.getCurrency(), a.getAccountNumber(), a.getIssuer(), color, amount);
+            String status = det == null ? null : getStatus(det.getProgress());
+            return new AccountSummary(a.getAccountId(), a.getType(), a.getCurrency(), a.getAccountNumber(), a.getIssuer(), color, amount, status);
         }));
+    }
+
+    private String getStatus(Integer progress) {
+        if (progress != null) {
+            if (progress >= 100) {
+                return "COMPLETED";
+            } else if (progress > 0) {
+                return "IN_PROGRESS";
+            } else {
+                return "NOT_STARTED";
+            }
+        }
+        return "UNKNOWN";
     }
 
     @Override
@@ -147,9 +162,9 @@ class AccountServiceImpl implements AccountService {
                 .toList();
 
         var pagination = PageInfo.of(
-            pageRequest.page(),
-            pageRequest.limit(),
-            allPayees.size()
+                pageRequest.page(),
+                pageRequest.limit(),
+                allPayees.size()
         );
 
         log.info("Retrieved {} quick payees for user: {} (page {} of {})", pageData.size(), userId, pageRequest.page(), pagination.totalPages());

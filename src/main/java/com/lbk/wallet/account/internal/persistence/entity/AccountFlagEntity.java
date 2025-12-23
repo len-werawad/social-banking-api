@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "account_flags")
 @Data
@@ -30,4 +32,10 @@ public class AccountFlagEntity {
 
     @Column(name = "flag_value", nullable = false)
     private String flagValue;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

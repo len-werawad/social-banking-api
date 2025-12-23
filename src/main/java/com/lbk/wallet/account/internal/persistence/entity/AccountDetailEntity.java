@@ -25,4 +25,12 @@ public class AccountDetailEntity {
     private String userId;
 
     private String color;
+
+    @Column(name = "is_main_account")
+    private Boolean isMainAccount;
+
+    private Integer progress;
+
+    @Column(name = "dummy_col_5")
+    private String dummyCol5;
 }

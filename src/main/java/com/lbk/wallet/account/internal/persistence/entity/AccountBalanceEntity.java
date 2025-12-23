@@ -27,4 +27,7 @@ public class AccountBalanceEntity {
     private String userId;
 
     private BigDecimal amount;
+
+    @Column(name = "dummy_col_4")
+    private String dummyCol4;
 }

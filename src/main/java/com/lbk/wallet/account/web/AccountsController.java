@@ -1,6 +1,5 @@
 package com.lbk.wallet.account.web;
 
-import com.lbk.wallet.account.api.*;
 import com.lbk.wallet.account.api.AccountService;
 import com.lbk.wallet.account.api.dto.AccountSummary;
 import com.lbk.wallet.account.api.dto.GoalItem;
@@ -64,7 +63,7 @@ public class AccountsController {
         var accountsPage = accountService.listAccounts(auth.getName(), new PageRequest(page, limit));
         var goals = accountsPage.data().stream()
                 .filter(a -> "GOAL".equalsIgnoreCase(a.type()))
-                .map(a -> new GoalItem(a.accountId(), a.accountNumber(), "IN_PROGRESS", a.issuer(), a.amount()))
+                .map(a -> new GoalItem(a.accountId(), a.accountNumber(), a.status(), a.issuer(), a.amount()))
                 .toList();
         return PaginatedResponse.of(goals, accountsPage.pagination());
     }
@@ -79,7 +78,7 @@ public class AccountsController {
         var accountsPage = accountService.listAccounts(auth.getName(), new PageRequest(page, limit));
         var loans = accountsPage.data().stream()
                 .filter(a -> "LOAN".equalsIgnoreCase(a.type()))
-                .map(a -> new LoanItem(a.accountId(), "Credit Loan", "ACTIVE", a.amount()))
+                .map(a -> new LoanItem(a.accountId(), a.accountNumber(), a.status(), a.amount()))
                 .toList();
         return PaginatedResponse.of(loans, accountsPage.pagination());
     }

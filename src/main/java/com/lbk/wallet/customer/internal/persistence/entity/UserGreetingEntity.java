@@ -21,4 +21,7 @@ public class UserGreetingEntity {
 
     @Column(name = "greeting", columnDefinition = "text")
     private String greeting;
+
+    @Column(name = "dummy_col_2")
+    private String dummyCol2;
 }
