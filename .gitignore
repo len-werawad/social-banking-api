@@ -56,3 +56,9 @@ lombok.config
 
 ### === Generated files ===
 generated/
+
+build
+
+.idea
+
+.gradle
