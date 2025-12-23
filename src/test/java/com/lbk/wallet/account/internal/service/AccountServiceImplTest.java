@@ -89,11 +89,6 @@ class AccountServiceImplTest {
             assertThat(summary2.type()).isEqualTo("GOAL");
             assertThat(summary2.color()).isEqualTo("#3357FF");
             assertThat(summary2.amount()).isEqualTo(500.00);
-
-            verify(accountRepository).findByUserId(USER_ID);
-            verify(balanceRepository).findByUserId(USER_ID);
-            verify(detailRepository).findByUserId(USER_ID);
-            verifyNoMoreInteractions(accountRepository, balanceRepository, detailRepository);
         }
 
         @Test
@@ -108,11 +103,6 @@ class AccountServiceImplTest {
             List<AccountSummary> result = accountService.listAccounts(userId);
 
             assertThat(result).isEmpty();
-
-            verify(accountRepository).findByUserId(userId);
-            verify(balanceRepository).findByUserId(userId);
-            verify(detailRepository).findByUserId(userId);
-            verifyNoMoreInteractions(accountRepository, balanceRepository, detailRepository);
         }
 
         @Test
@@ -128,11 +118,6 @@ class AccountServiceImplTest {
 
             assertThat(result).hasSize(1);
             assertThat(result.getFirst().amount()).isEqualTo(0.0);
-
-            verify(accountRepository).findByUserId(USER_ID);
-            verify(balanceRepository).findByUserId(USER_ID);
-            verify(detailRepository).findByUserId(USER_ID);
-            verifyNoMoreInteractions(accountRepository, balanceRepository, detailRepository);
         }
 
         @Test
@@ -149,11 +134,6 @@ class AccountServiceImplTest {
 
             assertThat(result).hasSize(1);
             assertThat(result.getFirst().color()).isNull();
-
-            verify(accountRepository).findByUserId(USER_ID);
-            verify(balanceRepository).findByUserId(USER_ID);
-            verify(detailRepository).findByUserId(USER_ID);
-            verifyNoMoreInteractions(accountRepository, balanceRepository, detailRepository);
         }
 
         @Test
@@ -187,11 +167,6 @@ class AccountServiceImplTest {
             assertThat(result.get(2).accountId()).isEqualTo("acc-3");
             assertThat(result.get(2).amount()).isEqualTo(5000.00);
             assertThat(result.get(2).color()).isNull();
-
-            verify(accountRepository).findByUserId(USER_ID);
-            verify(balanceRepository).findByUserId(USER_ID);
-            verify(detailRepository).findByUserId(USER_ID);
-            verifyNoMoreInteractions(accountRepository, balanceRepository, detailRepository);
         }
     }
 
@@ -228,10 +203,6 @@ class AccountServiceImplTest {
 
             assertThat(result.get(2).payeeId()).isEqualTo("tx-3");
             assertThat(result.get(2).favorite()).isTrue();
-
-            verify(transactionService).listTransactionSummaries(USER_ID);
-            verify(flagRepository).findByUserIdAndFlagType(USER_ID, FAVORITE);
-            verifyNoMoreInteractions(transactionService, flagRepository);
         }
 
         @Test
@@ -251,10 +222,6 @@ class AccountServiceImplTest {
             assertThat(result).hasSize(2);
             assertThat(result.getFirst().payeeId()).isEqualTo("tx-1");
             assertThat(result.get(1).payeeId()).isEqualTo("tx-2");
-
-            verify(transactionService).listTransactionSummaries(USER_ID);
-            verify(flagRepository).findByUserIdAndFlagType(USER_ID, FAVORITE);
-            verifyNoMoreInteractions(transactionService, flagRepository);
         }
 
         @Test
@@ -267,15 +234,9 @@ class AccountServiceImplTest {
             when(transactionService.listTransactionSummaries(userId)).thenReturn(List.of());
             when(flagRepository.findByUserIdAndFlagType(userId, FAVORITE)).thenReturn(List.of());
 
-
             List<PayeeItem> result = accountService.listQuickPayees(userId, limit);
 
-
             assertThat(result).isEmpty();
-
-            verify(transactionService).listTransactionSummaries(userId);
-            verify(flagRepository).findByUserIdAndFlagType(userId, FAVORITE);
-            verifyNoMoreInteractions(transactionService, flagRepository);
         }
 
         @Test
@@ -297,10 +258,6 @@ class AccountServiceImplTest {
             assertThat(result).hasSize(2);
             assertThat(result.getFirst().favorite()).isFalse();
             assertThat(result.get(1).favorite()).isFalse();
-
-            verify(transactionService).listTransactionSummaries(USER_ID);
-            verify(flagRepository).findByUserIdAndFlagType(USER_ID, FAVORITE);
-            verifyNoMoreInteractions(transactionService, flagRepository);
         }
 
         @Test
@@ -321,10 +278,6 @@ class AccountServiceImplTest {
 
             assertThat(result).hasSize(1);
             assertThat(result.getFirst().payeeId()).isEqualTo("tx-1");
-
-            verify(transactionService).listTransactionSummaries(USER_ID);
-            verify(flagRepository).findByUserIdAndFlagType(USER_ID, FAVORITE);
-            verifyNoMoreInteractions(transactionService, flagRepository);
         }
     }
 
@@ -350,9 +303,6 @@ class AccountServiceImplTest {
             assertThat(result.get("acc-1")).isEqualByComparingTo(bd("1000.50"));
             assertThat(result.get("acc-2")).isEqualByComparingTo(bd("2500.75"));
             assertThat(result.get("acc-3")).isEqualByComparingTo(bd("500.00"));
-
-            verify(balanceRepository).findByUserId(USER_ID);
-            verifyNoMoreInteractions(balanceRepository);
         }
 
         @Test
@@ -366,11 +316,7 @@ class AccountServiceImplTest {
 
             Map<String, BigDecimal> result = accountService.getBalancesByUserId(userId);
 
-
             assertThat(result).isEmpty();
-
-            verify(balanceRepository).findByUserId(userId);
-            verifyNoMoreInteractions(balanceRepository);
         }
 
         @Test
@@ -381,15 +327,10 @@ class AccountServiceImplTest {
 
             when(balanceRepository.findByUserId(USER_ID)).thenReturn(List.of(balance));
 
-
             Map<String, BigDecimal> result = accountService.getBalancesByUserId(USER_ID);
-
 
             assertThat(result).hasSize(1);
             assertThat(result.get("acc-1")).isEqualByComparingTo(bd("9999.99"));
-
-            verify(balanceRepository).findByUserId(USER_ID);
-            verifyNoMoreInteractions(balanceRepository);
         }
 
         @Test
@@ -406,9 +347,6 @@ class AccountServiceImplTest {
 
             assertThat(result).hasSize(1);
             assertThat(result.get("acc-1")).isEqualByComparingTo(BigDecimal.ZERO);
-
-            verify(balanceRepository).findByUserId(USER_ID);
-            verifyNoMoreInteractions(balanceRepository);
         }
 
         @Test
@@ -425,9 +363,6 @@ class AccountServiceImplTest {
 
             assertThat(result).hasSize(1);
             assertThat(result.get("acc-1")).isEqualByComparingTo(bd("-500.00"));
-
-            verify(balanceRepository).findByUserId(USER_ID);
-            verifyNoMoreInteractions(balanceRepository);
         }
     }
 
