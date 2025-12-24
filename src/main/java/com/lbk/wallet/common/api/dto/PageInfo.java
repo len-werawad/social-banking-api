@@ -16,7 +16,7 @@ public record PageInfo(
 
     public static PageInfo fromSpringPage(org.springframework.data.domain.Page<?> springPage) {
         return new PageInfo(
-                springPage.getNumber() + 1, // Convert to 1-based
+                springPage.getNumber() + 1,
                 springPage.getSize(),
                 springPage.getTotalElements(),
                 springPage.getTotalPages()

@@ -1,49 +1,86 @@
 services:
-  db:
+  mysql:
     image: mysql:8.0
-    container_name: wallet-mysql
+    container_name: mysql
     environment:
-      MYSQL_DATABASE: wallet_db
-      MYSQL_USER: app
-      MYSQL_PASSWORD: app
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-wallet_db}
+      MYSQL_USER: ${MYSQL_USER:-app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-app}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT:-3306}:3306"
     command: [ "mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci" ]
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost", "-proot" ]
-      interval: 5s
-      timeout: 3s
+      interval: 10s
+      timeout: 5s
       retries: 30
-
-  redis:
-    image: redis:7.4
-    container_name: wallet-redis
-    command: >
-      redis-server
-      --appendonly yes
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    environment:
-      - TZ=Asia/Bangkok
+      start_period: 30s
     restart: unless-stopped
 
-volumes:
-  redis-data:
+  redis:
+    image: redis:7.4-alpine
+    container_name: redis
+    command: [ "redis-server", "--appendonly", "yes" ]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
 
-#  api:
+#  app:
 #    build:
 #      context: .
 #      dockerfile: Dockerfile
 #    container_name: wallet-api
-#    depends_on:
-#      db:
-#        condition: service_healthy
 #    environment:
-#      DB_URL: jdbc:mysql://db:3306/wallet_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-#      DB_USER: app
-#      DB_PASSWORD: app
+#      # ---- Spring ----
+#      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+#      SERVER_PORT: ${SERVER_PORT:-8080}
+#
+#      # ---- JWT ----
+#      JWT_ISSUER: ${JWT_ISSUER:-wallet-api}
+#      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION:-900000}
+#      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION:-604800000}
+#
+#      # ---- DB ----
+#      SPRING_DATASOURCE_URL: ${DB_URL:-jdbc:mysql://mysql:3306/wallet_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+#      SPRING_DATASOURCE_USERNAME: ${DB_USER:-app}
+#      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-app}
+#
+#      # ---- Flyway ----
+#      SPRING_FLYWAY_ENABLED: ${FLYWAY_ENABLED:-true}
+#
+#      # ---- Redis ----
+#      SPRING_DATA_REDIS_HOST: ${REDIS_HOST:-redis}
+#      SPRING_DATA_REDIS_PORT: ${REDIS_PORT:-6379}
+#
+#      # ---- Logging ----
+#      LOG_LEVEL: ${LOG_LEVEL:-INFO}
 #    ports:
-#      - "8080:8080"
+#      - "${APP_PORT:-8080}:8080"
+#    depends_on:
+#      mysql:
+#        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+#    healthcheck:
+#      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health >/dev/null 2>&1 || exit 1" ]
+#      interval: 15s
+#      timeout: 5s
+#      retries: 30
+#      start_period: 60s
+#    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:

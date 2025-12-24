@@ -2,9 +2,6 @@ package com.lbk.wallet.common.api.dto;
 
 import java.util.List;
 
-/**
- * Generic paginated response wrapper
- */
 public record PaginatedResponse<T>(
         List<T> data,
         PageInfo pagination

@@ -366,6 +366,82 @@ class AccountServiceImplTest {
         }
     }
 
+    @Nested
+    @DisplayName("listGoalAccounts method tests")
+    class ListGoalAccountsTests {
+
+        @Test
+        @DisplayName("should return only GOAL accounts mapped to GoalItem with same pagination")
+        void listGoalAccounts_success() {
+            var pageRequest = new com.lbk.wallet.common.api.dto.PageRequest(1, 20);
+
+            AccountEntity goalAcc = newAccount("acc-goal", USER_ID, "GOAL", "THB", "999-111", "KBank");
+            AccountEntity savingAcc = newAccount("acc-save", USER_ID, "SAVING", "THB", "123-456", "SCB");
+
+            when(accountRepository.findByUserIdAndTypeIgnoreCase(USER_ID, "GOAL", pageRequest.toPageable()))
+                    .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(goalAcc)));
+            when(balanceRepository.findByUserId(USER_ID)).thenReturn(List.of());
+            when(detailRepository.findByUserId(USER_ID)).thenReturn(List.of());
+
+            var result = accountService.listGoalAccounts(USER_ID, pageRequest);
+
+            assertThat(result.data()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("should return empty data when no GOAL accounts")
+        void listGoalAccounts_noGoals() {
+            var pageRequest = new com.lbk.wallet.common.api.dto.PageRequest(1, 20);
+
+            when(accountRepository.findByUserIdAndTypeIgnoreCase(USER_ID, "GOAL", pageRequest.toPageable()))
+                    .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
+            when(balanceRepository.findByUserId(USER_ID)).thenReturn(List.of());
+            when(detailRepository.findByUserId(USER_ID)).thenReturn(List.of());
+
+            var result = accountService.listGoalAccounts(USER_ID, pageRequest);
+
+            assertThat(result.data()).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("listLoanAccounts method tests")
+    class ListLoanAccountsTests {
+
+        @Test
+        @DisplayName("should return only LOAN accounts mapped to LoanItem with same pagination")
+        void listLoanAccounts_success() {
+            var pageRequest = new com.lbk.wallet.common.api.dto.PageRequest(1, 20);
+
+            AccountEntity loanAcc = newAccount("acc-loan", USER_ID, "LOAN", "THB", "555-666", "BBL");
+            AccountBalanceEntity loanBalance = newBalance("acc-loan", USER_ID, bd("5000.00"));
+
+            when(accountRepository.findByUserIdAndTypeIgnoreCase(USER_ID, "LOAN", pageRequest.toPageable()))
+                    .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of(loanAcc)));
+            when(balanceRepository.findByUserId(USER_ID)).thenReturn(List.of(loanBalance));
+            when(detailRepository.findByUserId(USER_ID)).thenReturn(List.of());
+
+            var result = accountService.listLoanAccounts(USER_ID, pageRequest);
+
+            assertThat(result.data()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("should return empty data when no LOAN accounts")
+        void listLoanAccounts_noLoans() {
+            var pageRequest = new com.lbk.wallet.common.api.dto.PageRequest(1, 20);
+
+            when(accountRepository.findByUserIdAndTypeIgnoreCase(USER_ID, "LOAN", pageRequest.toPageable()))
+                    .thenReturn(new org.springframework.data.domain.PageImpl<>(List.of()));
+            when(balanceRepository.findByUserId(USER_ID)).thenReturn(List.of());
+            when(detailRepository.findByUserId(USER_ID)).thenReturn(List.of());
+
+            var result = accountService.listLoanAccounts(USER_ID, pageRequest);
+
+            assertThat(result.data()).isEmpty();
+        }
+    }
+
     private static BigDecimal bd(String value) {
         return new BigDecimal(value);
     }

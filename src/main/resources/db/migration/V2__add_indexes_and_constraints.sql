@@ -1,5 +1,6 @@
 ALTER TABLE accounts
-    ADD INDEX idx_accounts_user (user_id);
+    ADD INDEX idx_accounts_user (user_id),
+    ADD INDEX idx_accounts_type_user (user_id, type);
 
 ALTER TABLE account_details
     ADD INDEX idx_account_details_user (user_id),
@@ -39,4 +40,4 @@ ALTER TABLE transactions
   ADD INDEX idx_tx_user_created (user_id, created_at DESC);
 
 ALTER TABLE app_config
-  ADD INDEX idx_app_config_env_platform_code (environment, platform, app_version);
+  ADD INDEX idx_app_config_env_platform_version (environment, platform, app_version);

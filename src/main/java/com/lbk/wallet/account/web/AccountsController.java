@@ -60,12 +60,7 @@ public class AccountsController {
             @RequestParam(defaultValue = "1") @Min(1) Integer page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) Integer limit
     ) {
-        var accountsPage = accountService.listAccounts(auth.getName(), new PageRequest(page, limit));
-        var goals = accountsPage.data().stream()
-                .filter(a -> "GOAL".equalsIgnoreCase(a.type()))
-                .map(a -> new GoalItem(a.accountId(), a.accountNumber(), a.status(), a.issuer(), a.amount()))
-                .toList();
-        return PaginatedResponse.of(goals, accountsPage.pagination());
+        return accountService.listGoalAccounts(auth.getName(), new PageRequest(page, limit));
     }
 
     @Operation(summary = "Get Loans Account", description = "Retrieve a list of loans accounts for the authenticated user")
@@ -75,12 +70,7 @@ public class AccountsController {
             @RequestParam(defaultValue = "1") @Min(1) Integer page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) Integer limit
     ) {
-        var accountsPage = accountService.listAccounts(auth.getName(), new PageRequest(page, limit));
-        var loans = accountsPage.data().stream()
-                .filter(a -> "LOAN".equalsIgnoreCase(a.type()))
-                .map(a -> new LoanItem(a.accountId(), a.accountNumber(), a.status(), a.amount()))
-                .toList();
-        return PaginatedResponse.of(loans, accountsPage.pagination());
+        return accountService.listLoanAccounts(auth.getName(), new PageRequest(page, limit));
     }
 
     @Operation(summary = "Get Payees", description = "Retrieve a list of payee favorites for the authenticated user")

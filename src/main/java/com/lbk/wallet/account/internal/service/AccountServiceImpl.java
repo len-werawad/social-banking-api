@@ -2,6 +2,8 @@ package com.lbk.wallet.account.internal.service;
 
 import com.lbk.wallet.account.api.AccountService;
 import com.lbk.wallet.account.api.dto.AccountSummary;
+import com.lbk.wallet.account.api.dto.GoalItem;
+import com.lbk.wallet.account.api.dto.LoanItem;
 import com.lbk.wallet.account.api.dto.PayeeItem;
 import com.lbk.wallet.account.internal.persistence.entity.AccountDetailEntity;
 import com.lbk.wallet.account.internal.persistence.entity.AccountEntity;
@@ -25,6 +27,9 @@ import java.util.*;
 class AccountServiceImpl implements AccountService {
 
     private static final Logger log = LoggerFactory.getLogger(AccountServiceImpl.class);
+
+    private static final String TYPE_GOAL = "GOAL";
+    private static final String TYPE_LOAN = "LOAN";
 
     private final AccountRepository accounts;
     private final AccountBalanceRepository balances;
@@ -185,5 +190,59 @@ class AccountServiceImpl implements AccountService {
 
         log.debug("Retrieved {} account balances for user: {}", result.size(), userId);
         return result;
+    }
+
+    @Override
+    public PaginatedResponse<GoalItem> listGoalAccounts(String userId, PageRequest pageRequest) {
+        log.debug("Fetching paginated GOAL accounts for user: {}, page: {}, limit: {}", userId, pageRequest.page(), pageRequest.limit());
+
+        Page<AccountEntity> goalPage = accounts.findByUserIdAndTypeIgnoreCase(userId, TYPE_GOAL, pageRequest.toPageable());
+
+        Map<String, BigDecimal> balancesByAcc = getBalancesByUserId(userId);
+        Map<String, AccountDetailEntity> detailsByAcc = new HashMap<>();
+        for (var d : details.findByUserId(userId)) {
+            detailsByAcc.put(d.getAccountId(), d);
+        }
+
+        var goalItems = goalPage.stream()
+                .map(a -> mapToAccountSummary(a, balancesByAcc, detailsByAcc))
+                .map(a -> new GoalItem(a.accountId(), a.accountNumber(), a.status(), a.issuer(), a.amount()))
+                .toList();
+
+        var pageInfo = PageInfo.of(
+                pageRequest.page(),
+                pageRequest.limit(),
+                goalPage.getTotalElements()
+        );
+
+        log.info("Retrieved {} GOAL accounts for user: {} (page {} of {})", goalItems.size(), userId, pageRequest.page(), pageInfo.totalPages());
+        return PaginatedResponse.of(goalItems, pageInfo);
+    }
+
+    @Override
+    public PaginatedResponse<LoanItem> listLoanAccounts(String userId, PageRequest pageRequest) {
+        log.debug("Fetching paginated LOAN accounts for user: {}, page: {}, limit: {}", userId, pageRequest.page(), pageRequest.limit());
+
+        Page<AccountEntity> loanPage = accounts.findByUserIdAndTypeIgnoreCase(userId, TYPE_LOAN, pageRequest.toPageable());
+
+        Map<String, BigDecimal> balancesByAcc = getBalancesByUserId(userId);
+        Map<String, AccountDetailEntity> detailsByAcc = new HashMap<>();
+        for (var d : details.findByUserId(userId)) {
+            detailsByAcc.put(d.getAccountId(), d);
+        }
+
+        var loanItems = loanPage.stream()
+                .map(a -> mapToAccountSummary(a, balancesByAcc, detailsByAcc))
+                .map(a -> new LoanItem(a.accountId(), a.accountNumber(), a.status(), a.amount()))
+                .toList();
+
+        var pageInfo = PageInfo.of(
+                pageRequest.page(),
+                pageRequest.limit(),
+                loanPage.getTotalElements()
+        );
+
+        log.info("Retrieved {} LOAN accounts for user: {} (page {} of {})", loanItems.size(), userId, pageRequest.page(), pageInfo.totalPages());
+        return PaginatedResponse.of(loanItems, pageInfo);
     }
 }

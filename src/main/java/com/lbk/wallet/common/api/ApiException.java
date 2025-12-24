@@ -2,11 +2,9 @@ package com.lbk.wallet.common.api;
 
 import com.lbk.wallet.common.api.dto.ErrorDetail;
 import org.springframework.http.HttpStatus;
-import org.springframework.modulith.NamedInterface;
 
 import java.util.List;
 
-@NamedInterface("api")
 public class ApiException extends RuntimeException {
 
     // Including the status field in the error response body improves clarity and reliability, especially when HTTP headers are unavailable or lost. As stated in RFC 9457 name-status,

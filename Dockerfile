@@ -1,6 +1,19 @@
-FROM eclipse-temurin:21-jre
+# Build stage
+FROM eclipse-temurin:21-jdk AS build
+WORKDIR /workspace
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle settings.gradle ./
+COPY src src
+RUN ./gradlew --no-daemon clean bootJar
+
+# Runtime stage
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY build/libs/*.jar app.jar
-ENV JAVA_OPTS=""
+
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
+COPY --from=build /workspace/build/libs/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

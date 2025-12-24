@@ -2,6 +2,8 @@ package com.lbk.wallet.account.web;
 
 import com.lbk.wallet.account.api.AccountService;
 import com.lbk.wallet.account.api.dto.AccountSummary;
+import com.lbk.wallet.account.api.dto.GoalItem;
+import com.lbk.wallet.account.api.dto.LoanItem;
 import com.lbk.wallet.account.api.dto.PayeeItem;
 import com.lbk.wallet.common.api.JwtService;
 import com.lbk.wallet.common.api.dto.PageInfo;
@@ -68,6 +70,9 @@ class AccountsControllerTest {
                     .andExpect(jsonPath("$.data.[0].amount").value(1000.00))
                     .andExpect(jsonPath("$.data.[1].accountId").value("acc-2"))
                     .andExpect(jsonPath("$.data.[1].type").value("GOAL"))
+                    .andExpect(jsonPath("$.data.[1].accountNumber").value("222-333"))
+                    .andExpect(jsonPath("$.data.[1].issuer").value("SCB"))
+                    .andExpect(jsonPath("$.data.[1].amount").value(500.00))
                     .andExpect(jsonPath("$.pagination").exists())
                     .andExpect(jsonPath("$.pagination.page").value(1))
                     .andExpect(jsonPath("$.pagination.limit").value(20))
@@ -198,12 +203,11 @@ class AccountsControllerTest {
         void goals_shouldReturnPaginatedGoalAccounts() throws Exception {
             var paginatedResponse = PaginatedResponse.of(
                     List.of(
-                            new AccountSummary("acc-goal", "GOAL", "THB", "999-111", "KBank", "#FF5733", 150.00, "IN_PROGRESS"),
-                            new AccountSummary("acc-save", "SAVING", "THB", "123-456", "SCB", "#3357FF", 999.00, "IN_PROGRESS")
+                            new GoalItem("acc-goal", "999-111", "IN_PROGRESS", "KBank", 150.00)
                     ),
-                    PageInfo.of(1, 20, 2)
+                    PageInfo.of(1, 20, 1)
             );
-            when(accountService.listAccounts("u1", new PageRequest(1, 20))).thenReturn(paginatedResponse);
+            when(accountService.listGoalAccounts("u1", new PageRequest(1, 20))).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/v1/accounts/goals"))
                     .andExpect(status().isOk())
@@ -217,7 +221,8 @@ class AccountsControllerTest {
                     .andExpect(jsonPath("$.data[0].amount").value(150.00))
                     .andExpect(jsonPath("$.pagination").exists())
                     .andExpect(jsonPath("$.pagination.page").value(1))
-                    .andExpect(jsonPath("$.pagination.total").value(2));
+                    .andExpect(jsonPath("$.pagination.limit").value(20))
+                    .andExpect(jsonPath("$.pagination.total").value(1));
         }
 
         @Test
@@ -225,37 +230,17 @@ class AccountsControllerTest {
         @WithMockUser(username = "u1")
         void goals_shouldReturnEmptyPaginatedListWhenNoGoals() throws Exception {
             var paginatedResponse = PaginatedResponse.of(
-                    List.of(new AccountSummary("acc-save", "SAVING", "THB", "123-456", "SCB", "#3357FF", 999.00, "IN_PROGRESS")),
-                    PageInfo.of(1, 20, 1)
+                    List.<GoalItem>of(),
+                    PageInfo.of(1, 20, 0)
             );
-            when(accountService.listAccounts("u1", new PageRequest(1, 20))).thenReturn(paginatedResponse);
+            when(accountService.listGoalAccounts("u1", new PageRequest(1, 20))).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/v1/accounts/goals"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data").isArray())
                     .andExpect(jsonPath("$.data.length()").value(0))
                     .andExpect(jsonPath("$.pagination").exists())
-                    .andExpect(jsonPath("$.pagination.total").value(1));
-        }
-
-        @Test
-        @DisplayName("should handle mixed case GOAL type")
-        @WithMockUser(username = "u1")
-        void goals_shouldHandleMixedCaseType() throws Exception {
-            var paginatedResponse = PaginatedResponse.of(
-                    List.of(
-                            new AccountSummary("acc-goal1", "goal", "THB", "111-222", "KBank", "#FF5733", 100.00, "IN_PROGRESS"),
-                            new AccountSummary("acc-goal2", "Goal", "THB", "333-444", "SCB", "#3357FF", 200.00, "IN_PROGRESS")
-                    ),
-                    PageInfo.of(1, 20, 2)
-            );
-            when(accountService.listAccounts("u1", new PageRequest(1, 20))).thenReturn(paginatedResponse);
-
-            mockMvc.perform(get("/v1/accounts/goals"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.length()").value(2))
-                    .andExpect(jsonPath("$.pagination").exists())
-                    .andExpect(jsonPath("$.pagination.total").value(2));
+                    .andExpect(jsonPath("$.pagination.total").value(0));
         }
     }
 
@@ -264,17 +249,16 @@ class AccountsControllerTest {
     class ListLoansTests {
 
         @Test
-        @DisplayName("should return only LOAN accounts mapped to LoanItem")
+        @DisplayName("should return paginated list of LOAN accounts mapped to LoanItem")
         @WithMockUser(username = "u1")
-        void loans_shouldReturnOnlyLoanAccounts() throws Exception {
+        void loans_shouldReturnPaginatedLoanAccounts() throws Exception {
             var paginatedResponse = PaginatedResponse.of(
                     List.of(
-                            new AccountSummary("acc-loan", "LOAN", "THB", "111-222", "KBank", "#FF5733", 2500.00, "ACTIVE"),
-                            new AccountSummary("acc-goal", "GOAL", "THB", "999-111", "SCB", "#3357FF", 150.00, "ACTIVE")
+                            new LoanItem("acc-loan", "555-666", "ACTIVE", 5000.00)
                     ),
-                    PageInfo.of(1, 20, 2)
+                    PageInfo.of(1, 20, 1)
             );
-            when(accountService.listAccounts("u1", new PageRequest(1, 20))).thenReturn(paginatedResponse);
+            when(accountService.listLoanAccounts("u1", new PageRequest(1, 20))).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/v1/accounts/loans"))
                     .andExpect(status().isOk())
@@ -282,51 +266,31 @@ class AccountsControllerTest {
                     .andExpect(jsonPath("$.data").isArray())
                     .andExpect(jsonPath("$.data.length()").value(1))
                     .andExpect(jsonPath("$.data[0].loanId").value("acc-loan"))
-                    .andExpect(jsonPath("$.data[0].name").value("111-222"))
+                    .andExpect(jsonPath("$.data[0].name").value("555-666"))
                     .andExpect(jsonPath("$.data[0].status").value("ACTIVE"))
-                    .andExpect(jsonPath("$.data[0].outstandingAmount").value(2500.00))
+                    .andExpect(jsonPath("$.data[0].outstandingAmount").value(5000.00))
                     .andExpect(jsonPath("$.pagination").exists())
                     .andExpect(jsonPath("$.pagination.page").value(1))
-                    .andExpect(jsonPath("$.pagination.total").value(2));
-        }
-
-        @Test
-        @DisplayName("should return empty list when no loan accounts")
-        @WithMockUser(username = "u1")
-        void loans_shouldReturnEmptyListWhenNoLoans() throws Exception {
-            var paginatedResponse = PaginatedResponse.of(
-                    List.of(new AccountSummary("acc-save", "SAVING", "THB", "123-456", "SCB", "#3357FF", 999.00, "IN_PROGRESS")),
-                    PageInfo.of(1, 20, 1)
-            );
-            when(accountService.listAccounts("u1", new PageRequest(1, 20))).thenReturn(paginatedResponse);
-
-            mockMvc.perform(get("/v1/accounts/loans"))
-                    .andExpect(jsonPath("$.data").isArray())
-                    .andExpect(jsonPath("$.data.length()").value(0))
-                    .andExpect(jsonPath("$.pagination").exists())
+                    .andExpect(jsonPath("$.pagination.limit").value(20))
                     .andExpect(jsonPath("$.pagination.total").value(1));
         }
 
         @Test
-        @DisplayName("should return multiple loan accounts")
+        @DisplayName("should return empty paginated list when no loan accounts")
         @WithMockUser(username = "u1")
-        void loans_shouldReturnMultipleLoans() throws Exception {
+        void loans_shouldReturnEmptyPaginatedListWhenNoLoans() throws Exception {
             var paginatedResponse = PaginatedResponse.of(
-                    List.of(
-                            new AccountSummary("acc-loan1", "LOAN", "THB", "111-222", "KBank", "#FF5733", 2500.00, "IN_PROGRESS"),
-                            new AccountSummary("acc-loan2", "LOAN", "THB", "333-444", "SCB", "#3357FF", 5000.00, "IN_PROGRESS")
-                    ),
-                    PageInfo.of(1, 20, 2)
+                    List.<LoanItem>of(),
+                    PageInfo.of(1, 20, 0)
             );
-            when(accountService.listAccounts("u1", new PageRequest(1, 20))).thenReturn(paginatedResponse);
+            when(accountService.listLoanAccounts("u1", new PageRequest(1, 20))).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/v1/accounts/loans"))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.length()").value(2))
-                    .andExpect(jsonPath("$.data[0].loanId").value("acc-loan1"))
-                    .andExpect(jsonPath("$.data[1].loanId").value("acc-loan2"))
+                    .andExpect(jsonPath("$.data").isArray())
+                    .andExpect(jsonPath("$.data.length()").value(0))
                     .andExpect(jsonPath("$.pagination").exists())
-                    .andExpect(jsonPath("$.pagination.total").value(2));
+                    .andExpect(jsonPath("$.pagination.total").value(0));
         }
     }
 
