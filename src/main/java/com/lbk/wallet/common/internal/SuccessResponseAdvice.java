@@ -23,9 +23,7 @@ public class SuccessResponseAdvice implements ResponseBodyAdvice<Object> {
     public Object beforeBodyWrite(Object body, MethodParameter returnType, MediaType contentType, Class<? extends HttpMessageConverter<?>> converterType, ServerHttpRequest request, ServerHttpResponse response) {
 
         String path = request.getURI().getPath();
-        if (path.startsWith("/v3/api-docs")
-                || path.startsWith("/swagger-ui")
-                || path.equals("/swagger-ui.html")) {
+        if (path.startsWith("/v3/api-docs") || path.startsWith("/swagger-ui") || path.equals("/swagger-ui.html")) {
             return body;
         }
 
@@ -33,7 +31,6 @@ public class SuccessResponseAdvice implements ResponseBodyAdvice<Object> {
             return body;
         }
 
-        // Handle PaginatedResponse - return as-is since it already has the correct structure
         if (body instanceof PaginatedResponse) {
             return body;
         }
