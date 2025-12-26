@@ -7,6 +7,7 @@ This repository focuses on:
 - SOLID & modular structure (Spring Modulith-style packages)
 - Docker/Compose deployment (works with Docker Compose or Podman Compose)
 
+
 ---
 
 ## Table of Contents
