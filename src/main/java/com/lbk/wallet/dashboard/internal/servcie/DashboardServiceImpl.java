@@ -34,7 +34,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final DelegatingSecurityContextExecutorService executorService;
 
     public DashboardServiceImpl(CustomerService customerService,
-                               AccountService accounts) {
+                                AccountService accounts) {
         this.customerService = customerService;
         this.accountsService = accounts;
         this.executorService = new DelegatingSecurityContextExecutorService(
