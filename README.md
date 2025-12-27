@@ -1,12 +1,8 @@
 # Social Banking API (Backend Developer Assignment)
 
-A modular Java Spring Boot backend that serves a **mobile banking UI** (based on `design.jpeg`) using the provided **MySQL schema + mock data**.
+**Social Banking API** is a comprehensive RESTful backend service for a modern mobile banking application. Built with Spring Boot, this API provides secure and efficient endpoints for managing banking operations including account management, transactions, authentication, and personalized financial dashboards.
 
-This repository focuses on:
-- RESTful API design with validation and meaningful error handling
-- SOLID & modular structure (Spring Modulith-style packages)
-- Docker/Compose deployment (works with Docker Compose or Podman Compose)
-
+The system follows a **modular monolithic architecture** using Spring Modulith principles, ensuring clear separation of concerns while maintaining the simplicity of a single deployable unit. It processes banking data from MySQL database.
 
 ---
 
@@ -107,8 +103,12 @@ DB migrations:
 
 ### Prerequisites
 
-- **Docker Compose** or **Podman Compose**
-- (Optional) **Java 21** for local development without Docker
+**Required:**
+- Docker Compose `v2.20+` or Podman Compose `v1.0+`
+
+**Optional (for local development without Docker):**
+- Java 21+
+- Gradle 8.5+ (or use included `./gradlew`)
 
 ---
 
@@ -123,14 +123,14 @@ cp .env.example .env
 2. Start all services (MySQL + Redis + App):
 
 ```bash
-podman compose up -d --build
-# or: docker compose up -d --build
+docker compose up -d --build
+# or: podman compose up -d --build
 ```
 
 3. Wait for services to be healthy:
 
 ```bash
-podman compose ps
+docker compose ps
 ```
 
 API will be available at `http://localhost:8080`
@@ -141,10 +141,10 @@ API will be available at `http://localhost:8080`
 
 ```bash
 # Stop all services
-podman compose down
+docker compose down
 
 # Stop and remove volumes (⚠️ deletes all data)
-podman compose down -v
+docker compose down -v
 ```
 
 ---
@@ -154,8 +154,8 @@ podman compose down -v
 After services are running, load the SQL dump:
 
 ```bash
-podman compose exec -T mysql mysql -uapp -papp social_banking_db < sql_data_dump.sql
-# or: docker compose exec -T mysql mysql -uapp -papp social_banking_db < sql_data_dump.sql
+docker compose exec -T mysql mysql -uapp -papp social_banking_db < sql_data_dump.sql
+# or: podman compose exec -T mysql mysql -uapp -papp social_banking_db < sql_data_dump.sql
 ```
 
 ---
@@ -331,7 +331,7 @@ All list endpoints return paginated responses:
 ### Response Error Format
 All error responses follow this structure:
 
-Including the status field in the error response body improves clarity and reliability, especially when HTTP headers are unavailable or lost. As stated in RFC 9457 name-status, the status is advisory and helps consumers interpret the error even outside the HTTP context.
+Including the __status__ field in the error response body improves clarity and reliability, especially when HTTP headers are unavailable or lost. As stated in RFC 9457 name-status, the status is advisory and helps consumers interpret the error even outside the HTTP context.
 
 ```json
 {
@@ -391,8 +391,7 @@ Generated sources:
 - **Think time**: 100–400 ms (simulate real user behavior)
 
 ### Test Results
-
-> **Interactive Report**: [View Full HTML Report](docs/k6/summary.html)
+- [View K6 Stress Test Report](./docs/k6/summary.html)
 
 **Key Metrics** (from latest test run):
 - ✅ **Total Requests**: 15,234
