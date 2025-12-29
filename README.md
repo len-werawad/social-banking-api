@@ -28,7 +28,14 @@ The system follows a **modular monolithic architecture** using Spring Modulith p
   - [Response Error Format](#response-error-format)
 - [Testing](#testing)
 - [Module Diagram (Spring Modulith)](#module-diagram-spring-modulith)
+  - [Generate / Update](#generate--update)
 - [Stress Test Report](#stress-test-report)
+  - [Tool](#tool)
+  - [Test Scenario](#test-scenario)
+  - [Test Stages](#test-stages)
+  - [Test Flow](#test-flow)
+  - [Test Results](#test-results)
+- [Conventional Commits](#conventional-commits)
 - [Improvements](#improvements)
 - [Author](#author)
 
@@ -79,6 +86,7 @@ social-banking-api/
     └── architecture/
         ├── components.puml
         └── components.png
+    └── k6/        
 ```
 
 All modules:
@@ -128,7 +136,6 @@ cp .env.example .env
 
 ```bash
 docker compose up -d --build
-# or: podman compose up -d --build
 ```
 
 3. Wait for services to be healthy:
@@ -416,22 +423,73 @@ Generated sources:
 ## Stress Test Report
 
 ### Tool
-- **k6**
+- **k6** (version 1.4.2)
 
 ### Test Scenario
-- Warm-up → Normal load → Stress → Ramp down
-- User flow: Login (PIN) → Dashboard
+- **User flow**: Login (PIN) → Dashboard
+- **Load pattern**: Rapid ramp-up to find breaking point
 
-### Configuration
-- **Peak load**: 600 Virtual Users
-- **Duration**: ~2 minutes
+### Test Stages
+
+| Stage | Duration | Target VUs | Description |
+|-------|----------|------------|-------------|
+| Ramp-up | 30s | 1,000 | Skip warm-up, jump to known good load |
+| Push | 40s | 2,000 | Double the load |
+| Stress | 40s | 3,000 | Push further |
+| Extreme | 40s | 4,000 | Find breaking point |
+| Ramp-down | 30s | 0 | Graceful shutdown |
+
+**Total duration**: ~3 minutes
+
+### Test Flow
+
+```
+1. Login (POST /v1/auth/login/pin)
+   ├── Validate response status 200
+   ├── Validate response has access token
+   ├── Extract access token
+   └── Record login_duration metric
+
+2. Sleep 0.5s (think time)
+
+3. Dashboard (GET /v1/dashboards)
+   ├── Validate response status 200
+   ├── Validate response has greeting
+   ├── Validate response has accounts
+   └── Record dashboard_duration metric
+
+4. Sleep 1s (think time)
+```
 
 ### Test Results
 
-  ![K6 Stress Test Report](./docs/k6/k6-report.png)
+![K6 Stress Test Report](./docs/k6/k6-report.png)
 
 ---
 
+## Conventional Commits
+
+Using [conventional commits](https://conventionalcommits.org/)
+
+* **feat**: A new feature
+* **fix**: A bug fix
+* **refactor**: A code change that neither fixes a bug nor adds a feature
+* **test**: Adding missing tests or correcting existing tests
+* **chore**: Update package dependencies
+* **docs**: Documentation only changes
+* **build**: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
+* **ci**: Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
+* **perf**: A code change that improves performance
+* **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+
+Examples
+```
+feat(Ticket-1234): new some api
+fix(Ticket-1234): some api
+doc(Ticket-1234): update swagger of some api
+doc: update conventional commits in readme
+chore: update some lib dependencies
+```
 
 ## Improvements
 

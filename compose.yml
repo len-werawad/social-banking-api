@@ -37,48 +37,48 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-#  app:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    container_name: social-banking-api
-#    ports:
-#      - "${SERVER_PORT:-8080}:${SERVER_PORT:-8080}"
-#    env_file:
-#      - .env
-#    environment:
-#      # ---- Spring ----
-#      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
-#      SERVER_PORT: ${SERVER_PORT:-8080}
-#
-#      # ---- JWT ----
-#      JWT_ISSUER: ${JWT_ISSUER:-social-banking-api}
-#      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION:-900000}
-#      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION:-604800000}
-#
-#      # ---- DB ----
-#      DB_URL: ${DB_URL:-jdbc:mysql://mysql:3306/social_banking_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
-#      DB_USERNAME: ${DB_USERNAME:-app}
-#      DB_PASSWORD: ${DB_PASSWORD:-app}
-#
-#      # ---- Flyway ----
-#      FLYWAY_ENABLED: ${FLYWAY_ENABLED:-true}
-#
-#      # ---- Redis ----
-#      REDIS_HOST: ${REDIS_HOST:-redis}
-#      REDIS_PORT: ${REDIS_PORT:-6379}
-#    depends_on:
-#      mysql:
-#        condition: service_healthy
-#      redis:
-#        condition: service_healthy
-#    healthcheck:
-#      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health >/dev/null 2>&1 || exit 1" ]
-#      interval: 15s
-#      timeout: 5s
-#      retries: 30
-#      start_period: 60s
-#    restart: unless-stopped
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: social-banking-api
+    ports:
+      - "${SERVER_PORT:-8080}:${SERVER_PORT:-8080}"
+    env_file:
+      - .env
+    environment:
+      # ---- Spring ----
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
+      SERVER_PORT: ${SERVER_PORT:-8080}
+
+      # ---- JWT ----
+      JWT_ISSUER: ${JWT_ISSUER:-social-banking-api}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION:-900000}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION:-604800000}
+
+      # ---- DB ----
+      DB_URL: ${DB_URL:-jdbc:mysql://mysql:3306/social_banking_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+      DB_USERNAME: ${DB_USERNAME:-app}
+      DB_PASSWORD: ${DB_PASSWORD:-app}
+
+      # ---- Flyway ----
+      FLYWAY_ENABLED: ${FLYWAY_ENABLED:-true}
+
+      # ---- Redis ----
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -qO- http://127.0.0.1:8080/actuator/health >/dev/null 2>&1 || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+    restart: unless-stopped
 
 volumes:
   mysql_data:
