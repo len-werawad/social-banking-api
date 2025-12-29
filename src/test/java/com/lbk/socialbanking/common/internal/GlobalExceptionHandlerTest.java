@@ -12,10 +12,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 import java.util.Set;
@@ -113,13 +118,45 @@ class GlobalExceptionHandlerTest {
 
         MissingRequestHeaderException ex = new MissingRequestHeaderException("Authorization", methodParameter);
 
-        ResponseEntity<ErrorEnvelope> response = handler.handleMissingHeader(ex, request);
+        ResponseEntity<ErrorEnvelope> response = handler.handleMissingOrInvalidParam(ex, request);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals(400, response.getBody().error().status());
         assertEquals("VALIDATION_ERROR", response.getBody().error().code());
-        assertEquals("Missing required header.", response.getBody().error().message());
+        assertEquals("Missing required header: Authorization", response.getBody().error().message());
+        assertNotNull(response.getBody().error().traceId());
+    }
+
+    @Test
+    @DisplayName("Should handle MissingServletRequestParameterException")
+    void shouldHandleMissingServletRequestParameterException() {
+        MissingServletRequestParameterException ex = new MissingServletRequestParameterException("page", "Integer");
+
+        ResponseEntity<ErrorEnvelope> response = handler.handleMissingOrInvalidParam(ex, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(400, response.getBody().error().status());
+        assertEquals("VALIDATION_ERROR", response.getBody().error().code());
+        assertEquals("Required parameter 'page' is missing", response.getBody().error().message());
+        assertNotNull(response.getBody().error().traceId());
+    }
+
+    @Test
+    @DisplayName("Should handle MethodArgumentTypeMismatchException")
+    void shouldHandleMethodArgumentTypeMismatchException() {
+        MethodArgumentTypeMismatchException ex = mock(MethodArgumentTypeMismatchException.class);
+        when(ex.getName()).thenReturn("limit");
+        when(ex.getRequiredType()).thenReturn((Class) Integer.class);
+
+        ResponseEntity<ErrorEnvelope> response = handler.handleMissingOrInvalidParam(ex, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(400, response.getBody().error().status());
+        assertEquals("VALIDATION_ERROR", response.getBody().error().code());
+        assertEquals("Parameter 'limit' must be of type Integer", response.getBody().error().message());
         assertNotNull(response.getBody().error().traceId());
     }
 
@@ -150,6 +187,52 @@ class GlobalExceptionHandlerTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("Validation failed", response.getBody().error().message());
+    }
+
+    @Test
+    @DisplayName("Should handle HttpMessageNotReadableException")
+    void shouldHandleHttpMessageNotReadableException() {
+        HttpMessageNotReadableException ex = mock(HttpMessageNotReadableException.class);
+        when(ex.getMessage()).thenReturn("JSON parse error");
+
+        ResponseEntity<ErrorEnvelope> response = handler.handleMessageNotReadable(ex, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(400, response.getBody().error().status());
+        assertEquals("INVALID_REQUEST_BODY", response.getBody().error().code());
+        assertEquals("Request body is missing or malformed", response.getBody().error().message());
+        assertNotNull(response.getBody().error().traceId());
+    }
+
+    @Test
+    @DisplayName("Should handle NoResourceFoundException")
+    void shouldHandleNoResourceFoundException() throws NoResourceFoundException {
+        NoResourceFoundException ex = mock(NoResourceFoundException.class);
+
+        ResponseEntity<ErrorEnvelope> response = handler.handleNoResourceFound(ex, request);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(404, response.getBody().error().status());
+        assertEquals("NOT_FOUND", response.getBody().error().code());
+        assertEquals("The requested resource was not found", response.getBody().error().message());
+        assertNotNull(response.getBody().error().traceId());
+    }
+
+    @Test
+    @DisplayName("Should handle HttpRequestMethodNotSupportedException")
+    void shouldHandleHttpRequestMethodNotSupportedException() {
+        HttpRequestMethodNotSupportedException ex = new HttpRequestMethodNotSupportedException("POST", List.of("GET", "PUT"));
+
+        ResponseEntity<ErrorEnvelope> response = handler.handleMethodNotSupported(ex, request);
+
+        assertEquals(HttpStatus.METHOD_NOT_ALLOWED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(405, response.getBody().error().status());
+        assertEquals("METHOD_NOT_ALLOWED", response.getBody().error().code());
+        assertTrue(response.getBody().error().message().contains("POST"));
+        assertNotNull(response.getBody().error().traceId());
     }
 
     @Test
