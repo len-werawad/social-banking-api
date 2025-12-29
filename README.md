@@ -250,7 +250,7 @@ When the API starts with `FLYWAY_ENABLED=true`, Flyway runs schema migrations in
 After services are running, load the mock data:
 
 1. **Download** the SQL dump from Google Drive:
-   - [sql_data_dump.zip](https://drive.google.com/file/d/13VJhtqXpDGxCWh3aEIA6QDTnzyJyvSaV/view?usp=sharing)
+   - [sql_data_dump.zip](https://drive.google.com/file/d/1CBs8px8ZH71De1Ok4kDg7fakuZmjpNhC/view?usp=sharing)
 
 2. **Extract** the ZIP file:
    ```bash
