@@ -164,7 +164,7 @@ docker compose down -v
 
 > **Note**: 
 > - The `.env` file provides environment variables for container networking.
-> - For local development without Docker, start only dependencies: `podman compose up mysql redis -d`, then run `./gradlew bootRun`
+> - For local development without Docker, start only dependencies: `docker compose up mysql redis -d`, then run `./gradlew bootRun`
 
 ---
 
