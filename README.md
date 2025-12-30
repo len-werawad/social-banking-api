@@ -1,6 +1,6 @@
 # Social Banking API (Backend Developer Assignment)
 
-**Social Banking API** is a comprehensive RESTful backend service for a modern mobile banking application. Built with Spring Boot, this API provides secure and efficient endpoints for managing banking operations including account management, transactions, authentication, and personalized financial dashboards.
+**Social Banking API** is a comprehensive RESTful backend service for a mobile banking application. Built with Spring Boot, this API provides secure and efficient endpoints for managing banking operations including account management, transactions, authentication, and personalized financial dashboards.
 
 The system follows a **modular monolithic architecture** using Spring Modulith principles, ensuring clear separation of concerns while maintaining the simplicity of a single deployable unit. It processes banking data from MySQL database.
 
